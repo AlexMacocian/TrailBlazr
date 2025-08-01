@@ -1,0 +1,43 @@
+name: TrailBlazr CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+      
+jobs:
+
+  build:
+    environment: Default
+    strategy:
+      matrix:
+        targetplatform: [x64]
+
+    runs-on: windows-latest
+
+    env:
+      Configuration: Release
+      Actions_Allow_Unsecure_Commands: true
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.x'
+
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2.0.0
+
+    - name: Build TrailBlazr project
+      run: dotnet build TrailBlazr -c $env:Configuration
+
+    - name: Package TrailBlazr
+      run: dotnet pack -c Release -o . TrailBlazr\TrailBlazr.csproj
+
+    - name: Publish
+      run: dotnet nuget push *.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate

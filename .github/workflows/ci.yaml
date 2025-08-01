@@ -1,0 +1,46 @@
+name: TrailBlazr CI Pipeline
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+      - release/*
+
+jobs:
+
+  build:
+    strategy:
+      matrix:
+        targetplatform: [x64]
+
+    runs-on: windows-latest
+
+    env:
+      Configuration: Debug
+      Actions_Allow_Unsecure_Commands: true
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.x'
+
+    - name: Setup MSBuild.exe
+      uses: microsoft/setup-msbuild@v2.0.0
+
+    - name: Build TrailBlazr project
+      run: dotnet build TrailBlazr -c $env:Configuration
+
+    - name: Build TrailBlazr.Tests project
+      run: dotnet build TrailBlazr.Tests -c $env:Configuration
+
+    - name: Run tests
+      run: dotnet test TrailBlazr.Tests -c $env:Configuration --verbosity normal

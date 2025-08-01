@@ -1,0 +1,29 @@
+﻿<DynamicComponent Type="@this.CurrentViewType" Parameters="@this.CurrentParameters" />
+
+@using TrailBlazr.Models
+@using TrailBlazr.Services
+@code {
+    [Inject]
+    protected IViewManager? ViewManager { get; set; }
+
+    protected Type CurrentViewType { get; set; } = typeof(EmptyComponent);
+
+    protected Dictionary<string, object> CurrentParameters { get; set; } = [];
+
+    protected override void OnInitialized()
+    {
+        if (this.ViewManager is null)
+        {
+            throw new InvalidOperationException("ViewManager is not initialized.");
+        }
+
+        this.ViewManager.ShowViewRequested += this.UpdateCurrentView;
+    }
+
+    private void UpdateCurrentView(object? _, ViewRequest request)
+    {
+        this.CurrentParameters = new Dictionary<string, object>() { { "DataContext", request.DataContext ?? new object() } };
+        this.CurrentViewType = request.ViewType;
+        this.StateHasChanged();
+    }
+}

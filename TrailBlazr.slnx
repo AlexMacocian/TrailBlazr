@@ -6,6 +6,7 @@
   </Configurations>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
+    <File Path=".github/dependabot.yml" />
     <File Path=".github/workflows/cd.yaml" />
     <File Path=".github/workflows/ci.yaml" />
     <File Path="Directory.Build.props" />

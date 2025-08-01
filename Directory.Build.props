@@ -1,9 +1,16 @@
 ﻿<Project>  
   <PropertyGroup>
-    <Version>0.1.0</Version>
+    <Version>0.2.0</Version>
 
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)LICENSE.txt" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
 </Project>

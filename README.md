@@ -1,6 +1,7 @@
 ﻿# TrailBlazr
 
-[![CI](https://github.com/your-username/TrailBlazr/actions/workflows/ci.yaml/badge.svg)](https://github.com/your-username/TrailBlazr/actions/workflows/ci.yaml)
+[![CI](https://github.com/AlexMacocian/TrailBlazr/actions/workflows/ci.yaml/badge.svg)](https://github.com/AlexMacocian/TrailBlazr/actions/workflows/ci.yaml)
+[![CD](https://github.com/AlexMacocian/TrailBlazr/actions/workflows/cd.yaml/badge.svg)](https://github.com/AlexMacocian/TrailBlazr/actions/workflows/cd.yaml)
 [![NuGet](https://img.shields.io/nuget/v/TrailBlazr.svg)](https://www.nuget.org/packages/TrailBlazr/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 

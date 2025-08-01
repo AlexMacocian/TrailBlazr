@@ -1,12 +1,13 @@
-﻿using TrailBlazr.Models;
+﻿using Microsoft.Extensions.DependencyInjection;
+using TrailBlazr.Models;
 using TrailBlazr.ViewModels;
 using TrailBlazr.Views;
 
 namespace TrailBlazr.Services;
 public sealed class ViewManager(
-    IEnumerable<ViewRegistration> viewRegistrations) : IViewManager
+    IServiceProvider serviceProvider) : IViewManager
 {
-    private readonly List<ViewRegistration> viewRegistrations = [.. viewRegistrations];
+    private readonly IServiceProvider serviceProvider = serviceProvider;
 
     public event EventHandler<ViewRequest>? ShowViewRequested;
 
@@ -25,7 +26,8 @@ public sealed class ViewManager(
 
     private void ShowViewInner(Type viewType, object? dataContext = null)
     {
-        if (this.viewRegistrations.FirstOrDefault(r => r.ViewType == viewType) is not ViewRegistration registration)
+        var viewRegistrations = this.serviceProvider.GetServices<ViewRegistration>();
+        if (viewRegistrations.FirstOrDefault(r => r.ViewType == viewType) is not ViewRegistration registration)
         {
             throw new InvalidOperationException("View type not registered: " + viewType.FullName);
         }

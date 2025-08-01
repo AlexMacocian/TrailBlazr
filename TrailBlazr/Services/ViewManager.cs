@@ -1,7 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using TrailBlazr.Models;
-using TrailBlazr.ViewModels;
-using TrailBlazr.Views;
 
 namespace TrailBlazr.Services;
 public sealed class ViewManager(
@@ -11,9 +10,8 @@ public sealed class ViewManager(
 
     public event EventHandler<ViewRequest>? ShowViewRequested;
 
-    public void ShowView<TView, TViewModel>(object? dataContext = null)
-        where TView : ViewBase<TView, TViewModel>
-        where TViewModel : ViewModelBase<TViewModel, TView>
+    public void ShowView<TView>(object? dataContext = null)
+        where TView : ComponentBase
     {
         var viewType = typeof(TView);
         this.ShowViewInner(viewType, dataContext);

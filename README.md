@@ -82,7 +82,7 @@ public class HomeViewModel : ViewModelBase<HomeViewModel, HomeView>
 
     private void NavigateToProfile()
     {
-        this.ViewManager.ShowView<UserProfileView, UserProfileViewModel>();
+        this.ViewManager.ShowView<UserProfileView>();
     }
 }
 ```
@@ -105,11 +105,14 @@ Inject `IViewManager` anywhere in your application to navigate:
 [Inject]
 private IViewManager ViewManager { get; set; }
 
-// Navigate to a view with optional data context
-ViewManager.ShowView<UserProfileView, UserProfileViewModel>(userData);
+// Navigate to a view with optional parameters
+ViewManager.ShowView<UserProfileView>([ {"user", userId} ]);
 
 // Or navigate by type
-ViewManager.ShowView(typeof(HomeView), someData);
+ViewManager.ShowView(typeof(HomeView), [ {"user", userId} ]);
+
+// Or navigate by path
+ViewManager.ShowView("/user/profile", [ {"user", userId} ]);
 ```
 
 ## Core Concepts
@@ -131,8 +134,9 @@ Base class for all viewmodels that provides:
 ### IViewManager
 
 Central service for managing view navigation:
-- `ShowView<TView, TViewModel>(object? dataContext)` - Navigate with strong typing
-- `ShowView(Type viewType, object? dataContext)` - Navigate by type
+- `ShowView<TView>(RouteValues? routeValues)` - Navigate with strong typing
+- `ShowView(Type viewType, RouteValues? routeValues)` - Navigate by type
+- `ShowView(string path, RouteValues? routeValues)` - Navigate by path
 - `ShowViewRequested` event - Subscribe to navigation events
 
 ### ViewContainer
@@ -141,6 +145,7 @@ Blazor component that hosts and renders the current view:
 - Automatically updates when navigation occurs
 - Supports dynamic component rendering
 - Passes data context to views
+- Hooks into `NavigationManager` to handle URL changes and forwards navigation requests to `IViewManager`
 
 ## Architecture
 

@@ -9,16 +9,6 @@ public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged
 {
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public object? DataContext
-    {
-        get => field;
-        set
-        {
-            field = value;
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.DataContext)));
-        }
-    }
-
     protected TView? View
     {
         get => field;

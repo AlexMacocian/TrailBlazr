@@ -4,7 +4,10 @@
 @using TrailBlazr.Services
 @code {
     [Inject]
-    protected IViewManager? ViewManager { get; set; }
+    public required IViewManager ViewManager { get; init; }
+
+    [Inject]
+    public required NavigationManager NavigationManager { get; init; }
 
     protected Type CurrentViewType { get; set; } = typeof(EmptyComponent);
 
@@ -17,12 +20,13 @@
             throw new InvalidOperationException("ViewManager is not initialized.");
         }
 
+        ((ViewManager)this.ViewManager).ContainerInitialized(this.NavigationManager);
         this.ViewManager.ShowViewRequested += this.UpdateCurrentView;
     }
 
     private void UpdateCurrentView(object? _, ViewRequest request)
     {
-        this.CurrentParameters = new Dictionary<string, object>() { { "DataContext", request.DataContext ?? new object() } };
+        this.CurrentParameters = request.RouteValues.ToDictionary();
         this.CurrentViewType = request.ViewType;
         this.StateHasChanged();
     }

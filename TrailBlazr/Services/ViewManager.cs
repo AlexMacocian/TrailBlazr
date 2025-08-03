@@ -44,7 +44,7 @@ public sealed class ViewManager(
         routeValues ??= [];
         if (this.navigationManager is null)
         {
-            throw new InvalidOperationException("NavigationManager is not initialized. Ensure that the ViewManager is properly registered in the service container and that the NavigationManager is available.");
+            return;
         }
 
         if (viewRegistrations.FirstOrDefault(r => r.ViewType == viewType) is not ViewRegistration registration)

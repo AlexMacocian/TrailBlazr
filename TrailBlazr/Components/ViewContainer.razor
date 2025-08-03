@@ -1,5 +1,6 @@
 ﻿<DynamicComponent Type="@this.CurrentViewType" Parameters="@this.CurrentParameters" />
 
+@using Microsoft.Extensions.Logging
 @using TrailBlazr.Models
 @using TrailBlazr.Services
 @code {
@@ -8,6 +9,9 @@
 
     [Inject]
     public required NavigationManager NavigationManager { get; init; }
+
+    [Inject]
+    public required ILogger<ViewContainer> Logger { get; init; }
 
     protected Type CurrentViewType { get; set; } = typeof(EmptyComponent);
 
@@ -26,8 +30,15 @@
 
     private void UpdateCurrentView(object? _, ViewRequest request)
     {
-        this.CurrentParameters = request.RouteValues.ToDictionary();
-        this.CurrentViewType = request.ViewType;
-        this.StateHasChanged();
+        try
+        {
+            this.CurrentParameters = request.RouteValues.ToDictionary();
+            this.CurrentViewType = request.ViewType;
+            this.StateHasChanged();
+        }
+        catch(Exception ex)
+        {
+            this.Logger.LogError(ex, "Error changing view to {newView}", request.ViewType.Name);
+        }
     }
 }

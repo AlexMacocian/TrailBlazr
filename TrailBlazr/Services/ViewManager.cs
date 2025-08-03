@@ -42,12 +42,35 @@ public sealed class ViewManager(
     {
         var viewRegistrations = this.serviceProvider.GetServices<ViewRegistration>();
         routeValues ??= [];
+        if (this.navigationManager is null)
+        {
+            throw new InvalidOperationException("NavigationManager is not initialized. Ensure that the ViewManager is properly registered in the service container and that the NavigationManager is available.");
+        }
+
         if (viewRegistrations.FirstOrDefault(r => r.ViewType == viewType) is not ViewRegistration registration)
         {
             throw new InvalidOperationException($"View type not registered: {viewType.FullName}");
         }
 
-        this.ShowViewInner(registration.ViewType, registration.ViewModelType, routeValues);
+        if (registration.Routes.Count == 0)
+        {
+            throw new InvalidOperationException($"View type not registered with any routes: {viewType.FullName}");
+        }
+
+        var route = registration.Routes[0];
+        var url = route.Template.TemplateText;
+        if (url.Contains('?'))
+        {
+            url = url[..url.IndexOf('?')];
+        }
+
+        if (url.Contains('#'))
+        {
+            url = url[..url.IndexOf('#')];
+        }
+
+        var uri = this.navigationManager.GetUriWithQueryParameters(url, routeValues.ToDictionary());
+        this.navigationManager.NavigateTo(uri);
     }
 
     private void ShowViewByPath(string path, RouteValueDictionary? routeValues)

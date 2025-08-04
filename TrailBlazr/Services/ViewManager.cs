@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.RegularExpressions;
 using TrailBlazr.Models;
 
 namespace TrailBlazr.Services;
@@ -57,19 +58,28 @@ public sealed class ViewManager(
             throw new InvalidOperationException($"View type not registered with any routes: {viewType.FullName}");
         }
 
-        var route = registration.Routes[0];
-        var url = route.Template.TemplateText;
-        if (url.Contains('?'))
+        var template = registration.Routes[0].Template.TemplateText;
+        var remaining = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        foreach (var kvp in routeValues)
         {
-            url = url[..url.IndexOf('?')];
+            var placeholder = $"{{{kvp.Key}}}";
+
+            if (template.Contains(placeholder, StringComparison.OrdinalIgnoreCase))
+            {
+                template = template.Replace(placeholder, Uri.EscapeDataString(kvp.Value?.ToString() ?? string.Empty));
+            }
+            else
+            {
+                remaining[kvp.Key] = kvp.Value;
+            }
         }
 
-        if (url.Contains('#'))
+        if (template.Contains('{'))
         {
-            url = url[..url.IndexOf('#')];
+            throw new InvalidOperationException($"Missing route values for template '{template}'");
         }
 
-        var uri = this.navigationManager.GetUriWithQueryParameters(url, routeValues.ToDictionary());
+        var uri = this.navigationManager.GetUriWithQueryParameters(template, remaining);
         this.navigationManager.NavigateTo(uri);
     }
 

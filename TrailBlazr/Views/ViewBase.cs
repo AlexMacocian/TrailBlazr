@@ -40,6 +40,18 @@ public abstract class ViewBase<TView, TViewModel> : ComponentBase
         }
     }
 
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+        if (this is not TView view)
+        {
+            throw new InvalidOperationException($"View is not of type {typeof(TView).Name}. Actual type: {this.GetType().Name}");
+        }
+
+        using var initializationCts = new CancellationTokenSource(InitializationTimeout);
+        await this.ViewModel.ParametersSet(view, initializationCts.Token);
+    }
+
     internal void RefreshView()
     {
         this.StateHasChanged();

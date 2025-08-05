@@ -15,7 +15,7 @@ public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged
         private set
         {
             field = value;
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(this.View)));
+            this.NotifyPropertyChanged(nameof(this.View));
         }
     }
 
@@ -29,5 +29,12 @@ public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged
         this.View?.RefreshView();
     }
 
+    public void NotifyPropertyChanged(string propertyName)
+    {
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
     public virtual ValueTask Initialize(CancellationToken cancellationToken) => ValueTask.CompletedTask;
+
+    public virtual ValueTask ParametersSet(TView view, CancellationToken cancellationToken) => ValueTask.CompletedTask;
 }

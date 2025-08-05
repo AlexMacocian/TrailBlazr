@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
-using System.Text.RegularExpressions;
 using TrailBlazr.Models;
 
 namespace TrailBlazr.Services;
@@ -22,24 +21,24 @@ public sealed class ViewManager(
         this.navigationManager.LocationChanged += this.NavigationManager_LocationChanged;
     }
 
-    public void ShowView<TView>(RouteValueDictionary? routeValues = default)
+    public void ShowView<TView>(params (string, object)[] routeValues)
         where TView : ComponentBase
     {
         var viewType = typeof(TView);
         this.ShowViewByType(viewType, routeValues);
     }
 
-    public void ShowView(Type viewType, RouteValueDictionary? routeValues = default)
+    public void ShowView(Type viewType, params (string, object)[] routeValues)
     {
         this.ShowViewByType(viewType, routeValues);
     }
 
-    public void ShowView(string path, RouteValueDictionary? routeValues = default)
+    public void ShowView(string path, params (string, object)[] routeValues)
     {
         this.ShowViewByPath(path, routeValues);
     }
 
-    private void ShowViewByType(Type viewType, RouteValueDictionary? routeValues)
+    private void ShowViewByType(Type viewType, params (string, object)[] routeValues)
     {
         var viewRegistrations = this.serviceProvider.GetServices<ViewRegistration>();
         routeValues ??= [];
@@ -59,18 +58,18 @@ public sealed class ViewManager(
         }
 
         var template = registration.Routes[0].Template.TemplateText;
-        var remaining = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
+        var parameters = new Dictionary<string, object?>(StringComparer.OrdinalIgnoreCase);
         foreach (var kvp in routeValues)
         {
-            var placeholder = $"{{{kvp.Key}}}";
+            var placeholder = $"{{{kvp.Item1}}}";
 
             if (template.Contains(placeholder, StringComparison.OrdinalIgnoreCase))
             {
-                template = template.Replace(placeholder, Uri.EscapeDataString(kvp.Value?.ToString() ?? string.Empty));
+                template = template.Replace(placeholder, Uri.EscapeDataString(kvp.Item2?.ToString() ?? string.Empty));
             }
             else
             {
-                remaining[kvp.Key] = kvp.Value;
+                parameters[kvp.Item1] = kvp.Item2;
             }
         }
 
@@ -79,30 +78,38 @@ public sealed class ViewManager(
             throw new InvalidOperationException($"Missing route values for template '{template}'");
         }
 
-        var uri = this.navigationManager.GetUriWithQueryParameters(template, remaining);
+        var uri = this.navigationManager.GetUriWithQueryParameters(template, parameters);
         this.navigationManager.NavigateTo(uri);
     }
 
-    private void ShowViewByPath(string path, RouteValueDictionary? routeValues)
+    private void ShowViewByPath(string path, (string, object)[]? routeValues)
     {
         var uriObj = path.StartsWith('/') ? new Uri(path, UriKind.Relative) : new Uri(path, UriKind.Absolute);
-        routeValues ??= [];
-        var query = uriObj.IsAbsoluteUri ? uriObj.Query : path[(path.IndexOf('?') + 1)..];
+        var parameters = new RouteValueDictionary(StringComparer.OrdinalIgnoreCase);
+        foreach(var param in routeValues ?? [])
+        {
+            parameters[param.Item1] = param.Item2;
+        }
+
+        var query = uriObj.IsAbsoluteUri 
+            ? uriObj.Query
+            : path.Contains('?')
+                ? path[(path.IndexOf('?') + 1)..]
+                : string.Empty;
         var finalPath = uriObj.IsAbsoluteUri ? uriObj.PathAndQuery.Split('?').FirstOrDefault() ?? string.Empty : path.Split('?').FirstOrDefault() ?? string.Empty;
         foreach (var kvp in QueryHelpers.ParseNullableQuery(query) ?? [])
         {
-            routeValues[kvp.Key] = kvp.Value.Count == 1 ? kvp.Value[0] : kvp.Value;
+            parameters[kvp.Key] = kvp.Value.Count == 1 ? kvp.Value[0] : kvp.Value;
         }
 
         var viewRegistrations = this.serviceProvider.GetServices<ViewRegistration>();
-        routeValues ??= [];
         if (viewRegistrations.FirstOrDefault(r => r.Routes.FirstOrDefault(t => {
                 var parsedRouteValues = new RouteValueDictionary();
                 if (t.TryMatch(finalPath, parsedRouteValues))
                 {
                     foreach(var kvp in parsedRouteValues)
                     {
-                        routeValues[kvp.Key] = kvp.Value;
+                        parameters[kvp.Key] = kvp.Value;
                     }
 
                     return true;
@@ -114,7 +121,7 @@ public sealed class ViewManager(
             throw new InvalidOperationException($"Path not found: {finalPath}");
         }
 
-        this.ShowViewInner(registration.ViewType, registration.ViewModelType, routeValues);
+        this.ShowViewInner(registration.ViewType, registration.ViewModelType, parameters);
     }
 
     private void ShowViewInner(Type viewType, Type viewModelType, RouteValueDictionary routeValues)

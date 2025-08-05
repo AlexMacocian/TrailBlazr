@@ -10,5 +10,9 @@
     <PackageVersion Include="Microsoft.AspNetCore.Routing.Abstractions" Version="2.3.0" />
     <PackageVersion Include="Microsoft.AspNetCore.WebUtilities" Version="9.0.7" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="MSTest.Analyzers" Version="3.10.0" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.10.0" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.10.0" />
   </ItemGroup>
 </Project>

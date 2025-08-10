@@ -29,6 +29,11 @@ public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged
         this.View?.RefreshView();
     }
 
+    public ValueTask RefreshViewAsync()
+    {
+        return this.View?.RefreshViewAsync() ?? ValueTask.CompletedTask;
+    }
+
     public void NotifyPropertyChanged(string propertyName)
     {
         this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));

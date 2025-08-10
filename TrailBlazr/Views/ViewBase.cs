@@ -54,7 +54,12 @@ public abstract class ViewBase<TView, TViewModel> : ComponentBase
 
     internal void RefreshView()
     {
-        this.StateHasChanged();
+        _ = this.InvokeAsync(this.StateHasChanged);
+    }
+
+    internal async ValueTask RefreshViewAsync()
+    {
+        await this.InvokeAsync(this.StateHasChanged);
     }
 }
 

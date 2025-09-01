@@ -3,10 +3,12 @@ using TrailBlazr.Views;
 
 namespace TrailBlazr.ViewModels;
 
-public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged
+public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged, IDisposable
     where TViewModel : ViewModelBase<TViewModel, TView>
     where TView : ViewBase<TView, TViewModel>
 {
+    private bool disposed = false;
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     protected TView? View
@@ -42,4 +44,24 @@ public abstract class ViewModelBase<TViewModel, TView> : INotifyPropertyChanged
     public virtual ValueTask Initialize(CancellationToken cancellationToken) => ValueTask.CompletedTask;
 
     public virtual ValueTask ParametersSet(TView view, CancellationToken cancellationToken) => ValueTask.CompletedTask;
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                this.View = null;
+                this.PropertyChanged = null;
+            }
+            
+            this.disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 }

@@ -1,18 +1,22 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
+using TrailBlazr.Components;
 using TrailBlazr.ViewModels;
 
 namespace TrailBlazr.Views;
-public abstract class ViewBase<TView, TViewModel> : ComponentBase
+public abstract class ViewBase<TView, TViewModel> : ComponentBase, IDisposable
     where TView : ViewBase<TView, TViewModel>
     where TViewModel : ViewModelBase<TViewModel, TView>
 {
     public readonly static TimeSpan InitializationTimeout = TimeSpan.FromSeconds(5);
+    private bool disposed = false;
 
     [Inject]
-    public TViewModel ViewModel { get; set; } = default!;
+    public required TViewModel ViewModel { get; set; }
     [Inject]
-    protected ILogger<TView> Logger { get; set; } = default!;
+    public required ILogger<TView> Logger { get; set; }
+    [CascadingParameter]
+    public required ViewContainer ViewContainer { get; set; }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -25,6 +29,11 @@ public abstract class ViewBase<TView, TViewModel> : ComponentBase
         if (this is not TView view)
         {
             throw new InvalidOperationException($"View is not of type {typeof(TView).Name}. Actual type: {this.GetType().Name}");
+        }
+
+        if (this.ViewContainer is null)
+        {
+            throw new InvalidOperationException("ViewContainer is not set. Ensure that this view is placed within a ViewContainer component");
         }
 
         this.ViewModel.SetView(view);
@@ -60,6 +69,27 @@ public abstract class ViewBase<TView, TViewModel> : ComponentBase
     internal async ValueTask RefreshViewAsync()
     {
         await this.InvokeAsync(this.StateHasChanged);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!this.disposed)
+        {
+            if (disposing)
+            {
+                this.ViewModel = null!;
+                this.Logger = null!;
+                this.ViewContainer = null!;
+            }
+
+            this.disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        this.Dispose(true);
+        GC.SuppressFinalize(this);
     }
 }
 

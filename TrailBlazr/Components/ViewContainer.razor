@@ -1,8 +1,12 @@
-﻿<DynamicComponent Type="@this.CurrentViewType" Parameters="@this.CurrentParameters" />
+﻿<CascadingValue Value="this">
+    <DynamicComponent Type="@this.CurrentViewType" Parameters="@this.CurrentParameters" />
+</CascadingValue>
 
 @using Microsoft.Extensions.Logging
 @using TrailBlazr.Models
 @using TrailBlazr.Services
+@using TrailBlazr.Views
+@implements IDisposable
 @code {
     [Inject]
     public required IViewManager ViewManager { get; init; }
@@ -39,6 +43,14 @@
         catch(Exception ex)
         {
             this.Logger.LogError(ex, "Error changing view to {newView}", request.ViewType.Name);
+        }
+    }
+
+    public void Dispose()
+    {
+        if (this.ViewManager is not null)
+        {
+            this.ViewManager.ShowViewRequested -= this.UpdateCurrentView;
         }
     }
 }

@@ -9,6 +9,7 @@
     <File Path=".github/dependabot.yml" />
     <File Path=".github/workflows/cd.yaml" />
     <File Path=".github/workflows/ci.yaml" />
+    <File Path=".github/workflows/gitlab-mirror.yaml" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
     <File Path="LICENSE.txt" />
